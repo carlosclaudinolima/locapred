@@ -1,3 +1,5 @@
+from pyspark.sql import functions as F
+from pyspark.sql.window import Window
 # Visão Gold A: Modelagem Preditiva (XGBoost / MLlib)
 
 # O objetivo é antecipar o volume de incidentes em D+1 e D+7. 
@@ -6,13 +8,13 @@
 #                                              queremos prever).
 
 
-df_silver = spark.table("silver.incidentes_tratados")
+df_silver = spark.table("silver.incidentes_locaweb_tratados")
 
 # Agregando dados diários de incidentes válidos para o negócio
 gold_ts = df_silver.filter(F.col("valido_kpi") == True) \
     .groupBy("data_abertura", "dia_semana", "mes", "is_fim_semana") \
     .agg(
-        F.count("Número").alias("volume_diario"),
+        F.count("numero").alias("volume_diario"),
         F.sum(F.when(F.col("ola_violado") == True, 1).otherwise(0)).alias("total_ola_violado")
     )
 
@@ -40,12 +42,12 @@ gold_predictive.write.format("delta").mode("overwrite").saveAsTable("gold.ml_tim
 
 # Agrupando por Produto e Categoria para encontrar Clusters de Risco
 gold_cluster = df_silver.filter(F.col("valido_kpi") == True) \
-    .groupBy("Produto", "Categoria") \
+    .groupBy("produto", "categoria") \
     .agg(
-        F.count("Número").alias("volume_total"),
-        F.avg("Duração").alias("mttr_segundos"),
+        F.count("numero").alias("volume_total"),
+        F.avg("duracao").alias("mttr_segundos"),
         F.sum(F.when(F.col("ola_violado") == True, 1).otherwise(0)).alias("violacoes_ola"),
-        F.countDistinct("item_configuracao").alias("qtd_ativos_impactados")
+        F.countDistinct("item_de_configuracao").alias("qtd_ativos_impactados")
     ) \
     .withColumn("taxa_violacao_ola", F.col("violacoes_ola") / F.col("volume_total"))
 
