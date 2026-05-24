@@ -1,2 +1,1 @@
-# locapred
-Enterprise Challenge 2026 - Parceria FIAP/Locaweb
+# Enterprise Challenge 2026 - Parceria FIAP/Locaweb
