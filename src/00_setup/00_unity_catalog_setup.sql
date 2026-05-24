@@ -3,11 +3,12 @@ USE CATALOG workspace;
 
 -- Criação do Schema para abrigar o Volume onde vamos fazer o upload do Excel
 -- Será substituído por uma pasta na nuvem ao final do projeto
-CREATE SCHEMA IF NOT EXISTS dados;
+CREATE SCHEMA IF NOT EXISTS dados
   COMMENT 'Schema placeholder para a landing zone dos arquivos xlsx';
 
 -- Criação do Volume (Onde vamos jogar o .xlsx manualmente ou via pipeline)
-CREATE EXTERNAL VOLUME IF NOT EXISTS dados.raw;
+CREATE VOLUME IF NOT EXISTS dados.raw
+  COMMENT 'Volume para ingestão de dados brutos';
 
 -- ==========================================
 -- Criação dos Schemas da Arquitetura Medallion
