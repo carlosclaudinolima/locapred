@@ -1,0 +1,14 @@
+# Ignora arquivos de dados locais
+*.csv
+*.xlsx
+*.parquet
+*.json
+
+# Ignora pastas de dados locais e notebooks compilados
+/data/
+.ipynb_checkpoints/
+__pycache__/
+*.class
+
+# Ignora credenciais (Nunca suba senhas no GitHub)
+.env
