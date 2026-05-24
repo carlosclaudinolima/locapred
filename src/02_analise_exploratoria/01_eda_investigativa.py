@@ -1,3 +1,4 @@
+import pyspark.sql.functions as F
 # Lendo da Bronze para a investigação
 df_bronze = spark.table("bronze.incidentes_locaweb")
 
@@ -5,7 +6,7 @@ df_bronze = spark.table("bronze.incidentes_locaweb")
 print("--- Taxa de Nulos por Coluna Crítica ---")
 df_bronze.select([
     F.round((F.sum(F.when(F.col(c).isNull(), 1).otherwise(0)) / F.count("*")) * 100, 2).alias(c)
-    for c in ["Produto", "Categoria", "Item de configuração", "Incidente Pai"]
+    for c in ["produto", "categoria", "item_de_configuracao", "incidente_pai"]
 ]).show()
 # Insight esperado: Se "Item de configuração" tiver 80% de nulos, o agrupamento crônico por ativo de TI perde força.
 
@@ -14,7 +15,7 @@ df_bronze.select([
 # Vamos provar isso estatisticamente antes de dropar ou usar na Silver.
 print("--- Cruzamento: Status x Origem de Abertura ---")
 display(
-    df_bronze.groupBy("Status", "Aberto por")
+    df_bronze.groupBy("status", "aberto_por")
     .count()
     .orderBy(F.desc("count"))
 )

@@ -7,7 +7,7 @@
 from pyspark.sql import functions as F
 
 # Lendo os dados já tratados da camada Silver
-df_silver = spark.table("silver.incidentes_tratados")
+df_silver = spark.table("silver.incidentes_locaweb_tratados")
 
 print("=========================================================")
 print(" INSIGHT 1: SAZONALIDADE (Onde o caos se concentra?)")
@@ -18,8 +18,8 @@ eda_sazonalidade = df_silver \
     .filter(F.col("valido_kpi") == True) \
     .groupBy("dia_semana", "hora_dia") \
     .agg(
-        F.count("Número").alias("volume_incidentes"),
-        F.round(F.avg("Duração") / 3600, 2).alias("tempo_medio_resolucao_horas")
+        F.count("numero").alias("volume_incidentes"),
+        F.round(F.avg("duracao") / 3600, 2).alias("tempo_medio_resolucao_horas")
     ) \
     .orderBy("volume_incidentes", ascending=False)
 
@@ -34,10 +34,10 @@ print("=========================================================")
 # Obrigatório: Foco em Prioridade 2 - Alta e Prioridade 3 - Média[cite: 81, 395].
 
 eda_criticos = df_silver \
-    .filter((F.col("Prioridade").isin(["2 - Alta", "3 - Média"])) & (F.col("valido_kpi") == True)) \
-    .groupBy("Produto", "Categoria", "Prioridade") \
+    .filter((F.col("prioridade").isin(["2 - Alta", "3 - Média"])) & (F.col("valido_kpi") == True)) \
+    .groupBy("produto", "categoria", "prioridade") \
     .agg(
-        F.count("Número").alias("total_incidentes"),
+        F.count("numero").alias("total_incidentes"),
         F.sum(F.when(F.col("ola_violado") == True, 1).otherwise(0)).alias("violacoes_ola")
     ) \
     .withColumn("taxa_falha_ola_perc", F.round((F.col("violacoes_ola") / F.col("total_incidentes")) * 100, 2)) \
@@ -54,10 +54,10 @@ print("=========================================================")
 # Desafio: Detectar incidentes recorrentes[cite: 98, 456].
 
 eda_recorrencia = df_silver \
-    .filter(F.col("item_configuracao").isNotNull()) \
-    .groupBy("item_configuracao", "Categoria", "Prioridade") \
+    .filter(F.col("item_de_configuracao").isNotNull()) \
+    .groupBy("item_de_configuracao", "categoria", "prioridade") \
     .agg(
-        F.count("Número").alias("qtd_falhas_no_ativo"),
+        F.count("numero").alias("qtd_falhas_no_ativo"),
         F.countDistinct("data_abertura").alias("dias_distintos_com_falha"),
         F.countDistinct("grupo_designado").alias("qtd_equipes_acionadas") # Mostra se o problema fica "pingando" entre equipes
     ) \
